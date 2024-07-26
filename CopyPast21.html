@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copiar e Editar Textos</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+        .text-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px; /* Limita a largura máxima do contêiner */
+        }
+        .text-content {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 100%;
+            min-height: 100px; /* Aumenta a altura mínima */
+            margin-right: 10px;
+            box-sizing: border-box; /* Inclui padding e border na largura total */
+            overflow-y: auto; /* Adiciona rolagem vertical se necessário */
+        }
+        .copy-button {
+            background-color: blue;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            cursor: pointer;
+            font-size: 18px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .add-button {
+            margin: 20px;
+            padding: 10px 20px;
+            font-size: 24px;
+            background-color: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="text-containers">
+        <!-- Os contêineres de texto serão adicionados aqui -->
+    </div>
+    <button class="add-button" onclick="addTextContainer()">+</button>
+
+    <script>
+        // Função para adicionar um novo contêiner de texto
+        function addTextContainer(text = '') {
+            const container = document.getElementById('text-containers');
+            const id = 'text-' + (container.children.length + 1);
+            
+            const textContainer = document.createElement('div');
+            textContainer.classList.add('text-container');
+            
+            const textContent = document.createElement('div');
+            textContent.id = id;
+            textContent.classList.add('text-content');
+            textContent.contentEditable = 'true';
+            textContent.innerText = text;
+            textContent.onblur = () => saveTexts();
+
+            const copyButton = document.createElement('button');
+            copyButton.innerText = 'Copiar Texto';
+            copyButton.classList.add('copy-button');
+            copyButton.onclick = () => copyText(id);
+
+            textContainer.appendChild(textContent);
+            textContainer.appendChild(copyButton);
+            container.appendChild(textContainer);
+        }
+
+        // Função para copiar o texto
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999);
+
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+        }
+
+        // Função para salvar os textos no localStorage
+        function saveTexts() {
+            const container = document.getElementById('text-containers');
+            const texts = [];
+            for (let i = 0; i < container.children.length; i++) {
+                const textContent = container.children[i].querySelector('.text-content').innerText;
+                texts.push(textContent);
+            }
+            localStorage.setItem('texts', JSON.stringify(texts));
+        }
+
+        // Função para carregar os textos do localStorage
+        function loadTexts() {
+            const texts = JSON.parse(localStorage.getItem('texts'));
+            if (texts) {
+                texts.forEach(text => addTextContainer(text));
+            }
+        }
+
+        // Carregar os textos ao carregar a página
+        window.onload = loadTexts;
+    </script>
+</body>
+</html>
